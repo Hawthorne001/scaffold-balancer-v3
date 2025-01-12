@@ -8,22 +8,22 @@ module.exports = {
     themes: [
       {
         light: {
-          primary: "#a78bfa",
+          primary: "#9f95f0",
           "primary-content": "#ffffff",
           secondary: "rgb(251, 250, 249)",
           "secondary-content": "rgb(45, 55, 72)",
-          accent: "#525252",
+          accent: "#9f95f0",
           "accent-content": "#ffffff",
-          neutral: "#d4d4d4",
+          neutral: "#ffffff",
           "neutral-content": "rgb(45, 55, 72)",
-          "base-100": "#d4d4d4",
+          "base-100": "#E4E1DA",
           "base-200": "rgb(245, 243, 239)",
           "base-300": "#EBE8E0", // bg color
           "base-content": "rgb(45, 55, 72)",
-          info: "#93BBFB",
-          success: "#34EEB6",
-          warning: "#fdba74",
-          error: "#FF8863",
+          info: "#bcddff",
+          success: "#63f2be",
+          warning: "#fed7aa",
+          error: "#f9b5a8",
 
           "--rounded-btn": "9999rem",
 
@@ -40,22 +40,22 @@ module.exports = {
       },
       {
         dark: {
-          primary: "#ffffffff",
+          primary: "#9f95f0",
           "primary-content": "#0f172a",
           secondary: "rgb(70, 77, 88)",
           "secondary-content": "#F9FBFF",
-          accent: "#94a3b8",
+          accent: "#9f95f0",
           "accent-content": "#F9FBFF",
-          neutral: "rgb(229, 211, 190)",
-          "neutral-content": "rgb(70, 77, 88)",
+          neutral: "rgb(70, 77, 88)",
+          "neutral-content": "rgb(229, 211, 190)",
           "base-100": "#6b7280",
           "base-200": "rgb(63, 70, 80)",
           "base-300": "rgb(56, 62, 71)", // bg color
           "base-content": "rgb(229, 211, 190)",
-          info: "#93BBFB",
-          success: "#34EEB6",
-          warning: "#FFCF72",
-          error: "#FF8863",
+          info: "#93c6ff",
+          success: "#25e2a4",
+          warning: "#f6ba74",
+          error: "#f48975",
 
           "--rounded-btn": "9999rem",
 
@@ -80,9 +80,18 @@ module.exports = {
       },
       boxShadow: {
         center: "0 0 12px -2px rgb(0 0 0 / 0.05)",
+        inner: "inset 0 6px 12px 4px rgba(0, 4, 8, 0.075)", // More aggressive "shadow-inner"
       },
       animation: {
         "pulse-fast": "pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+      colors: {
+        "custom-beige-start": "#e5d3be",
+        "custom-beige-end": "#e6c6a0",
+        // "error-tint": "#ef444433",
+        // "warning-tint": "#fdba7433",
+        // "success-tint": "#10b98133",
+        // "info-tint": "#a78bfa33",
       },
     },
   },

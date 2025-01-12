@@ -1,22 +1,14 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  HooksConfig,
-  PoolActions,
-  PoolAttributes,
-  PoolComposition,
-  PoolConfig,
-  PoolSelector,
-  UserLiquidity,
-} from "./_components/";
+import { PoolOperations, PoolPageSkeleton, PoolSelector } from "./_components/";
+import { HooksConfig, PoolAttributes, PoolComposition, PoolConfig, UserLiquidity } from "./_components/info";
 import { type NextPage } from "next";
 import { type Address } from "viem";
-import { SkeletonLoader } from "~~/components/common";
-import { usePoolContract } from "~~/hooks/balancer";
-import { type Pool } from "~~/hooks/balancer/types";
-import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
+import { Alert } from "~~/components/common";
+import { type Pool, type RefetchPool, useReadPool } from "~~/hooks/balancer/";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 /**
  * 1. Search by pool address or select from dropdown
@@ -24,9 +16,27 @@ import { type RefetchPool } from "~~/hooks/balancer/usePoolContract";
  * 3. Perform actions within the selected pool by swapping and adding/removing liquidity
  */
 const Pools: NextPage = () => {
+  return (
+    <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
+      <div className="">
+        <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
+        <div className="text-xl mb-7">Select one of the example custom pools or search by pool contract address</div>
+      </div>
+
+      <Suspense fallback={<PoolPageSkeleton />}>
+        <PoolPageContent />
+      </Suspense>
+    </div>
+  );
+};
+
+export default Pools;
+
+const PoolPageContent = () => {
   const [selectedPoolAddress, setSelectedPoolAddress] = useState<Address | null>(null);
 
-  const { data: pool, refetch: refetchPool, isLoading, isError, isSuccess } = usePoolContract(selectedPoolAddress);
+  const { data: pool, refetch: refetchPool, isLoading, isError, isSuccess } = useReadPool(selectedPoolAddress);
+  const { targetNetwork } = useTargetNetwork();
 
   const searchParams = useSearchParams();
   const poolAddress = searchParams.get("address");
@@ -38,35 +48,24 @@ const Pools: NextPage = () => {
   }, [poolAddress]);
 
   return (
-    <div className="flex items-center flex-col flex-grow py-10 px-5 md:px-10 xl:px-20">
-      <div className="">
-        <h1 className="text-3xl md:text-5xl font-semibold mb-7 text-center">Custom Pools</h1>
-        <div className="text-xl mb-7">
-          Select one of the pools deployed to your local fork or search by pool contract address
-        </div>
-      </div>
-
+    <>
       <PoolSelector selectedPoolAddress={selectedPoolAddress} setSelectedPoolAddress={setSelectedPoolAddress} />
-
       {isLoading ? (
         <PoolPageSkeleton />
       ) : isError ? (
-        <div className="text-red-500 text-xl text-center">
-          <div className="mb-3">Error fetching pool data. The pool contract address was not valid</div>
-          <div>{selectedPoolAddress}</div>
-        </div>
+        <Alert type="error">
+          Error attempting to fetch pool data for {selectedPoolAddress} on the {targetNetwork.name} network
+        </Alert>
       ) : (
         isSuccess && pool && <PoolDashboard pool={pool} refetchPool={refetchPool} />
       )}
-    </div>
+    </>
   );
 };
 
-export default Pools;
-
 const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: RefetchPool }) => {
   return (
-    <Fragment>
+    <>
       <h3 className="mb-7 font-semibold text-3xl xl:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-violet-400 to-orange-500">
         {pool.name}
       </h3>
@@ -76,48 +75,17 @@ const PoolDashboard = ({ pool, refetchPool }: { pool: Pool; refetchPool: Refetch
           <div className="flex flex-col gap-7">
             <UserLiquidity pool={pool} />
             <PoolComposition pool={pool} />
-            <PoolAttributes pool={pool} />
-          </div>
-          <div className="flex flex-col gap-7">
-            {pool.poolConfig?.isPoolInitialized && (
-              <PoolActions key={pool.address} pool={pool} refetchPool={refetchPool} />
-            )}
             <HooksConfig pool={pool} />
             <PoolConfig pool={pool} />
           </div>
-        </div>
-      </div>
-    </Fragment>
-  );
-};
-
-const PoolPageSkeleton = () => {
-  return (
-    <div className="w-full">
-      <div className="flex h-20 mb-7">
-        <SkeletonLoader />
-      </div>
-      <div className="grid grid-cols-1 xl:grid-cols-2 w-full gap-7 mb-5">
-        <div className="flex flex-col gap-7">
-          <div className="w-full h-60">
-            <SkeletonLoader />
-          </div>
-          <div className="w-full h-60">
-            <SkeletonLoader />
-          </div>
-          <div className="w-full h-60">
-            <SkeletonLoader />
-          </div>
-        </div>
-        <div className="flex flex-col gap-7">
-          <div className="w-full h-72">
-            <SkeletonLoader />
-          </div>
-          <div className="w-full h-72">
-            <SkeletonLoader />
+          <div className="flex flex-col gap-7">
+            {pool.poolConfig?.isPoolInitialized && (
+              <PoolOperations key={pool.address} pool={pool} refetchPool={refetchPool} />
+            )}
+            <PoolAttributes pool={pool} />
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

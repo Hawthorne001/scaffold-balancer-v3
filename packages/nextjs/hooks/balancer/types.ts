@@ -1,4 +1,5 @@
-import { SwapKind, TokenAmount } from "@balancer/sdk";
+import { RefetchPool } from "./useReadPool";
+import { SwapKind } from "@balancer/sdk";
 import { WriteContractResult } from "@wagmi/core";
 import { type Address } from "viem";
 
@@ -11,6 +12,10 @@ export type Pool = {
   isRegistered: boolean;
   name: string;
   symbol: string;
+  minSwapFeePercentage: bigint;
+  maxSwapFeePercentage: bigint;
+  minInvariantRatio: bigint;
+  maxInvariantRatio: bigint;
   userBalance: bigint;
   poolConfig: PoolConfig | undefined;
   hooksConfig: HooksConfig | undefined;
@@ -32,6 +37,7 @@ export type PoolConfig = {
     disableUnbalancedLiquidity: boolean;
     enableAddLiquidityCustom: boolean;
     enableRemoveLiquidityCustom: boolean;
+    enableDonation: boolean;
   };
   staticSwapFeePercentage: bigint;
   aggregateSwapFeePercentage: bigint;
@@ -58,28 +64,18 @@ export type HooksConfig = {
 };
 
 ///////////////////
-// Pool Hooks
-//////////////////
-
-export type UseSwap = {
-  querySwap: () => Promise<QuerySwapResponse>;
-  swap: () => Promise<TransactionHash>;
-};
-
-export type UseAddLiquidity = {
-  queryAddLiquidity: () => Promise<QueryAddLiquidityResponse>;
-  addLiquidity: () => Promise<TransactionHash>;
-};
-
-export type UseRemoveLiquidity = {
-  queryRemoveLiquidity: (rawAmount: bigint) => Promise<QueryRemoveLiquidityResponse>;
-  removeLiquidity: () => Promise<TransactionHash>;
-};
-
-///////////////////
 // Pool Action Forms
 //////////////////
+
+export interface PoolActionsProps {
+  pool: Pool;
+  refetchPool: RefetchPool;
+  tokenBalances: TokenBalances;
+  refetchTokenBalances: () => void;
+}
+
 export type SwapConfig = {
+  userData: `0x${string}`;
   tokenIn: {
     poolTokensIndex: number;
     amount: string;
@@ -93,36 +89,15 @@ export type SwapConfig = {
   swapKind: SwapKind;
 };
 
-export type QueryPoolActionError = { message: string } | null;
-
-export type QuerySwapResponse = {
-  swapKind?: SwapKind;
-  expectedAmount?: TokenAmount;
-  minOrMaxAmount?: TokenAmount;
-  error?: QueryPoolActionError;
-};
-
-export type QueryAddLiquidityResponse = {
-  expectedBptOut?: TokenAmount;
-  minBptOut?: TokenAmount;
-  error?: QueryPoolActionError;
-};
-
-export type QueryRemoveLiquidityResponse = {
-  expectedAmountsOut?: TokenAmount[];
-  minAmountsOut?: TokenAmount[];
-  error?: QueryPoolActionError;
-};
-
-export type TokenInfo = {
+export type TokenAmountDetails = {
   symbol: string;
   name: string;
   rawAmount: bigint;
   decimals: number;
 };
 
-export type PoolActionReceipt = {
-  data: TokenInfo[];
+export type PoolOperationReceipt = {
+  data: TokenAmountDetails[];
   transactionHash: string;
 } | null;
 
@@ -131,13 +106,6 @@ export type TransactionHash = string | null;
 ///////////////////////
 // Token Hooks
 //////////////////////
-
-export type UseToken = {
-  tokenAllowance: bigint;
-  tokenBalance: bigint;
-  refetchTokenAllowance: () => void;
-  refetchTokenBalance: () => void;
-};
 
 export type TokenBalances = { [key: Address]: bigint };
 
